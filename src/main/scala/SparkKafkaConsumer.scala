@@ -2,6 +2,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import com.mongodb.spark.sql._
 
 object SparkKafkaConsumer {
 
@@ -9,6 +10,9 @@ object SparkKafkaConsumer {
     .builder()
     .master("yarn")
     .appName("KafkaSparkStreaming")
+    // uncomment this if you want to store in mongodb
+    //.config("spark.mongodb.input.uri", "mongodb+srv://<your user name>:<your passwd>@<your mongo host>/sample_training.test?retryWrites=true&w=majority")
+    //.config("spark.mongodb.output.uri", "mongodb+srv://<your user name>:<your passwd>@<your mongo host>/sample_training.test?retryWrites=true&w=majority")
     .getOrCreate()
 
   spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", "Your Access key id")
@@ -37,25 +41,41 @@ object SparkKafkaConsumer {
 
     // Just Print the messages in the console
 
-    lines.foreachRDD { rdd =>
-      if (rdd.count() > 0) {
-        rdd.collect().foreach(println)
-      }
-    }
+        lines.foreachRDD { rdd =>
+          if (rdd.count() > 0) {
+            rdd.collect().foreach(println)
+          }
+        }
 
     // Read the Json message from Kafka , parse the Json and write it into hive table
 
-    //    lines.foreachRDD { rdd =>
-    //      import spark.implicits._
-    //      if (rdd.count() > 0) {
-    //        val df: DataFrame = spark.sqlContext.read.json(rdd.toDS())
-    //        // df.printSchema()
-    //        //  df.show()
-    //        val eventDataDF: DataFrame = df.select($"equipUnitInitCode", $"equipUnitNbr", $"tripId", $"customerId", $"fleetId", $"requestTime")
-    //        // eventDataDF.show()
-    //        eventDataDF.write.format("hive").mode(SaveMode.Append).saveAsTable("mart_events.event_data")
-    //      }
-    //    }
+//    lines.foreachRDD { rdd =>
+//      import spark.implicits._
+//      if (rdd.count() > 0) {
+//        val df: DataFrame = spark.sqlContext.read.json(rdd.toDS())
+//        // df.printSchema()
+//        //  df.show()
+//        val eventDataDF: DataFrame = df.select($"equipUnitInitCode", $"equipUnitNbr", $"tripId", $"customerId", $"fleetId", $"requestTime")
+//        // eventDataDF.show()
+//        eventDataDF.write.format("hive").mode(SaveMode.Append).saveAsTable("mart_events.event_data")
+//
+//      }
+//    }
+
+    // Read the Json message from Kafka , parse the Json and write it into mongodb
+
+//    lines.foreachRDD { rdd =>
+//      import spark.implicits._
+//      if (rdd.count() > 0) {
+//        val df: DataFrame = spark.sqlContext.read.json(rdd.toDS())
+//        // df.printSchema()
+//        //  df.show()
+//        val eventDataDF: DataFrame = df.select($"equipUnitInitCode", $"equipUnitNbr", $"tripId", $"customerId", $"fleetId", $"requestTime")
+//        // eventDataDF.show()
+//        eventDataDF.write.mode("append").mongo()
+//
+//      }
+//    }
 
     // Write into AWS s3 bucket
 
